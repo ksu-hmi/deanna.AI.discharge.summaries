@@ -1,73 +1,173 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Discharge Summary Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <section class="first-section">
+    <nav class="navbar navbar-expand-lg">
+      <img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo">
+        <div class="container">    
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="#">Home</a>
+              </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Log In</a>
+                </li>
+            </ul>
+            <button class="btn btn-primary">Sign Up</button>
+        </div>
+    </nav>
 
-    <title>Summit</title>
-
-    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
-
-    <!-- Bootstrap core CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <!-- Custom styles for this template -->
-    <link href="/static/style.css" rel="stylesheet">
-
-    <script>
-        function triggerUpload() {
-          document.getElementById('pdfUpload').click();
-        }
+    <div class="container mt-10 content">
+        <div class="row">
+            <div class="col-md-6 left-side">
+                <h1 class="heading">AI Discharge Summary Generator</h1>
+                <button class="btn btn-primary try-btn">Try Now</button>
+            </div>
+            <div class="col-md-6">
+                <img src="/static/images/doctor.svg" alt="Doctor" class="img-fluid">
+            </div>
+        </div>
+    </div>
     
-        function uploadFile() {
-          document.getElementById('uploadForm').submit();
-        }
-      </script>
-  </head>
+  </section>
 
-  <body class="text-center">
 
-    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-      <header class="masthead mb-auto">
-        <div class="inner">
-          <h3 class="masthead-brand">Summit</h3>
-          <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="#">Home</a>
-            <a class="nav-link" href="#">Features</a>
-            <a class="nav-link" href="#">Contact</a>
-          </nav>
-        </div>
-      </header>
-
-      <main role="main" class="inner cover">
-        <h1 class="cover-heading">{{headline}}</h1>
-        <p class="lead">Summit is an AI power app to help you generate professional Discharge Summary.</p>
-
-        <button onclick="triggerUpload()" class="btn btn-lg btn-secondary">Upload</button>
-        <form id="uploadForm" method="post" enctype="multipart/form-data" style="display:none;">
-            <input type="file" id="pdfUpload" name="pdf" onchange="uploadFile()">
-        </form>
-
-      </main>
-
-      <footer class="mastfoot mt-auto">
-        <div class="inner">
-          <p>Created by Team 7</a>.</p>
-        </div>
-      </footer>
+  <section class="second-section">
+    <div class="container text-center my-5 wave-heading">
+      <span>Create a professional discharge summary</span><br>
+      <span>In two minutes...</span>
     </div>
 
+    <div class="container my-5">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <i class="fas fa-stethoscope fa-4x mb-3 fas-copy"></i>
+          <h2 class="copy-title">Lorem ipsum dolor</h2>
+          <p class="copy-body">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+        </div>
+        <div class="col-md-4 text-center">
+          <i class="fas fa-user-md fa-4x mb-3 fas-copy"></i>
+          <h2 class="copy-title">Lorem ipsum dolor</h2>
+          <p class="copy-body">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+        </div>
+        <div class="col-md-4 text-center">
+          <i class="fas fa-file-alt fa-4x mb-3 fas-copy"></i>
+          <h2 class="copy-title">Lorem ipsum dolor</h2>
+          <p class="copy-body">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-    <script src="../../assets/js/vendor/popper.min.js"></script>
-    <script src="../../dist/js/bootstrap.min.js"></script>
-  </body>
+
+  <section class="third-section">
+    <div class="container text-center pt-5 wave-heading">
+      <span>Upload your medical note</span><br>
+      <span>To generate a professional discharge summary</span>
+    </div>
+
+    <div class="upload-btn-wrapper my-4">  
+      <button class="btn btn-primary upload-btn">Upload Notes</button>
+    </div>
+  </section>
+
+
+
+  <section class="fourth-section">
+      <div class="container py-5 wave-heading">
+        <span>Listen to what our users say...</span>
+      </div>
+
+      <div class="container text-center testimonial-container">
+
+        <div class="row align-items-center testimonial">
+            <div class="col-auto">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="col bubble">
+              <p class="bubble-text text-left">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center testimonial"> 
+            <div class="col bubble-right">
+              <p class="bubble-text text-right">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..</p>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-user fa-user-right"></i>
+            </div>
+        </div>
+
+        <div class="row align-items-center testimonial">
+          <div class="col-auto">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="col bubble">
+            <p class="bubble-text text-left">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..</p>
+          </div>
+      </div>
+
+      </div>
+  </section>
+
+  <footer class="text-white py-3">
+    <div class="container py-3">
+      <div class="row">
+        <div class="col-md-4">
+          <ul class="list-unstyled">
+            <li><i class="fas fa-phone fas-footer"></i>+44-xxxx-xxxx-xxx</li>
+            <li><i class="fas fa-envelope fas-footer"></i>summit@proton.com</li>
+            <li><i class="fas fa-map-marker-alt fas-footer"></i> Bridge Street, Cardiff, CF10 2TP</li>
+          </ul>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <ul class="list-unstyled">
+            <li><a href="">About Us</a></li>
+            <li><a href="">Contact Us</a></li>
+            <li><a href="">Pricing</a></li>
+          </ul>
+        </div>
+        
+        <div class="col-md-4 text-right">
+          <ul class="list-unstyled">  
+            <li><a href="">Privacy Policy</a></li>
+            <li><a href="">Terms & Conditions</a></li>
+          </ul>
+          <div class="mt-2">
+            <a href="" class="text-white mr-2"><i class="fab fa-facebook fas-social"></i></a>
+            <a href="" class="text-white mr-2"><i class="fab fa-twitter fas-social"></i></a>
+            <a href="" class="text-white"><i class="fab fa-instagram fas-social"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-md-12 text-center">
+          <p>&copy; 2024 Summit All Right are reserved</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/097dda7f33.js" crossorigin="anonymous"></script>
+</body>
 </html>

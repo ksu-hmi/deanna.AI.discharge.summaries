@@ -1,6 +1,5 @@
 import os 
 import base64
-import markdown
 from openai import OpenAI
 from pdf2image import convert_from_path
 from io import BytesIO
@@ -78,7 +77,7 @@ def home():
         if file and file.filename.endswith('.pdf'):
             file.save('asset/example.pdf')
             encoded_images = pdf_to_encoded_imgs('asset/example.pdf')
-            content = markdown.markdown(send_request(encoded_images))            
+            content = send_request(encoded_images)
             return render_template('summary.html', content=content)
     return render_template('index.html', headline='Upload your medical notes.')
 

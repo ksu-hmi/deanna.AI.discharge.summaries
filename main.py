@@ -13,13 +13,15 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 ckeditor = CKEditor(app)
 
+
+
 UPLOAD_FOLDER = 'static/asset/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY']= '33cb3a618421f095b17b657179e7a83a'
 config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
 
 # Set session lifetime to 30 minutes (for example)
-app.permanent_session_lifetime = timedelta(minutes=30)
+app.permanent_session_lifetime = timedelta(minutes=60)
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_DISCHARGE_API")
@@ -29,14 +31,18 @@ def generate_unique_filename():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     return f"{timestamp}.pdf"
 
+encoded_images = []
+
 # convert pdf file to a list of images 
 def pdf_to_encoded_imgs(pdf_path):
+    global encoded_images
     images = convert_from_path(pdf_path)
 
-    # list to hold base64 encoded images
-    encoded_images = []
+    encoded_images = []  # Clear the list before appending new images
 
     for image in images:
+        images = convert_from_path(pdf_path)
+
         # convert image to bytes
         buffered = BytesIO()
         image.save(buffered, format='JPEG')
@@ -45,8 +51,8 @@ def pdf_to_encoded_imgs(pdf_path):
         img_str = base64.b64encode(buffered.getvalue()).decode()
 
         # append the encoded string to the list
-        encoded_images.append(img_str) # encoded_images contains all the pages of the PDF as Base64 encoded strings
-        print(len(encoded_images))
+        encoded_images.append(img_str) 
+
         return encoded_images
 
 def send_request(encoded_images, custom_prompt):
@@ -84,6 +90,7 @@ def send_request(encoded_images, custom_prompt):
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
+    global encoded_images
     if request.method == 'POST':
         if 'pdf' not in request.files:
             flash('No file part')
@@ -96,18 +103,34 @@ def home():
             filename = generate_unique_filename()
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             encoded_images = pdf_to_encoded_imgs(f'static/asset/{filename}')
-            content = send_request(encoded_images, clinical_prompt)
-            content = content.replace('\n', '<br>')
-            content = markdown.markdown(content)
-            session['content'] = content
-            return redirect(url_for('get_summary'))        
+            return redirect(url_for('get_clinic'))        
     return render_template('index.html')
 
+@app.route("/clinic", methods=['GET', 'POST'])
+def get_clinic():
+    global encoded_images
+    content = send_request(encoded_images, clinical_prompt)
+    content = content.replace('\n', '<br>')
+    content = markdown.markdown(content)
+    session['content'] = content
+    session['is_clinic'] = True
+    return redirect(url_for('get_summary')) 
+
+@app.route('/patient-friendly', methods=['GET', 'POST'])
+def get_patient_friendly():
+    global encoded_images
+    content = send_request(encoded_images, patient_friendly_prompt)
+    content = content.replace('\n', '<br>')
+    content = markdown.markdown(content)
+    session['content'] = content
+    session['is_clinic'] = False
+    return redirect(url_for('get_summary')) 
 
 @app.route("/summary", methods=['GET', 'POST'])
 def get_summary():
     content = session.get('content', None)
-    return render_template('edit.html', content=content, is_edit=False)
+    is_clinic = session.get('is_clinic', None)
+    return render_template('edit.html', content=content, is_edit=False, is_clinic=is_clinic)
 
 
 @app.route("/edit", methods=['GET', 'POST'])
@@ -116,14 +139,16 @@ def edit():
     form = EditForm(
         body = content
     )
-    print("Form submitted:", request.method)
-    print("Form valid:", form.validate_on_submit())
     if form.validate_on_submit():
         content = form.body.data
         session['content'] = content
         flash("You've updated the discharge summary")
         return redirect(url_for('get_summary'))   
     return render_template('edit.html', is_edit=True, form=form, content=content)
+
+
+
+
 
 @app.route('/download', methods=['GET'])
 def download_pdf():

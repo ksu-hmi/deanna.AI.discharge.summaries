@@ -13,12 +13,12 @@
 <body class="edit-page">
 
     <nav class="navbar navbar-expand-lg">
-      <img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo">
-        <div class="container">    
-            <ul class="navbar-nav ml-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="{{url_for('home')}}">Home</a>
-              </li>
+        <a href="{{ url_for('home') }}"><img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo"></a>
+          <div class="container">    
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Dashboard</a>
                 </li>
@@ -76,7 +76,12 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col text-center">
-                        <a class="btn btn-primary">Generate patient friendly version</a>
+                        {% if is_clinic %}
+                            <a class="btn btn-primary" href="{{ url_for('get_patient_friendly') }}">Generate patient friendly version</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{{ url_for('get_summary') }}">Generate clinic version</a>
+                        {% endif %}
+
                     </div>
                 </div>
             {% endif %}            

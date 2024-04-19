@@ -23,11 +23,11 @@
 <body>
   <section class="first-section">
     <nav class="navbar navbar-expand-lg">
-      <img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo">
+      <a href="{{ url_for('home') }}"><img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo"></a>
         <div class="container">    
             <ul class="navbar-nav ml-auto">
               <li class="nav-item">
-                <a class="nav-link" href="#">Home</a>
+                <a class="nav-link" href="{{ url_for('home') }}">Home</a>
               </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Dashboard</a>

@@ -42,7 +42,7 @@ nav {
   opacity: 1;
   background: #164863;
   border-color: #164863;
-  font-size: 30px;
+  font-size: 25px;
   font-weight: 600;
   line-height: 20px;
   letter-spacing: 0em;
@@ -269,3 +269,27 @@ footer a:hover {
 .fas-social {
   font-size: 25px;
 }
+
+/* edit page */
+
+.edit-page {
+  background: linear-gradient(211deg, #4F7D8A 0%, #9BBEC8 0%, rgba(254, 254, 254, 0.0137) 75%, rgba(255, 255, 255, 0) 75%);
+}
+
+
+.main-content {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding: 50px;
+  background: rgba(155, 190, 200, 0.41);
+  border-radius: 80px;
+}
+
+.summary-title {
+  font-weight:700;
+}
+
+.summary-content {
+  font-size: larger;
+}
+

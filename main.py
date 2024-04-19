@@ -1,17 +1,33 @@
 import os 
 import base64
+import markdown
+import pdfkit
 from openai import OpenAI
 from pdf2image import convert_from_path
 from io import BytesIO
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
+from form import EditForm
+from flask_ckeditor import CKEditor
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
+ckeditor = CKEditor(app)
+
+UPLOAD_FOLDER = 'static/asset/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY']= '33cb3a618421f095b17b657179e7a83a'
+config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
+
+# Set session lifetime to 30 minutes (for example)
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_DISCHARGE_API")
 )
 
-
+def generate_unique_filename():
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    return f"{timestamp}.pdf"
 
 # convert pdf file to a list of images 
 def pdf_to_encoded_imgs(pdf_path):
@@ -33,7 +49,7 @@ def pdf_to_encoded_imgs(pdf_path):
         print(len(encoded_images))
         return encoded_images
 
-def send_request(encoded_images):
+def send_request(encoded_images, custom_prompt):
     # send request to ChatGPT
     response = client.chat.completions.create(
     model="gpt-4-vision-preview",
@@ -43,7 +59,7 @@ def send_request(encoded_images):
         "content": [
             {
             "type": "text",
-            "text": "You're an experienced doctor. These images are the medical notes from a fake patient. Based on the medical notes, You need to generate a discharge summary for this fake patient.",
+            "text": custom_prompt,
             },
             {
             "type": "image_url",
@@ -60,7 +76,7 @@ def send_request(encoded_images):
         ],
         }
     ],
-    max_tokens=1000,
+    max_tokens=4000,
     )
 
     return response.choices[0].message.content
@@ -70,17 +86,86 @@ def send_request(encoded_images):
 def home():
     if request.method == 'POST':
         if 'pdf' not in request.files:
+            flash('No file part')
             return redirect(url_for('home'))
         file  = request.files['pdf']
         if file.filename == '':
-            return render_template('index.html', headline='No selected file')
+            flash('No selected file')
+            return redirect(url_for('home'))
         if file and file.filename.endswith('.pdf'):
-            file.save('asset/example.pdf')
-            encoded_images = pdf_to_encoded_imgs('asset/example.pdf')
-            content = send_request(encoded_images)
-            return render_template('summary.html', content=content)
-    return render_template('index.html', headline='Upload your medical notes.')
+            filename = generate_unique_filename()
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            encoded_images = pdf_to_encoded_imgs(f'static/asset/{filename}')
+            content = send_request(encoded_images, clinical_prompt)
+            content = content.replace('\n', '<br>')
+            content = markdown.markdown(content)
+            session['content'] = content
+            return redirect(url_for('get_summary'))        
+    return render_template('index.html')
 
+
+@app.route("/summary", methods=['GET', 'POST'])
+def get_summary():
+    content = session.get('content', None)
+    return render_template('edit.html', content=content, is_edit=False)
+
+
+@app.route("/edit", methods=['GET', 'POST'])
+def edit():
+    content = session.get('content', None)
+    form = EditForm(
+        body = content
+    )
+    print("Form submitted:", request.method)
+    print("Form valid:", form.validate_on_submit())
+    if form.validate_on_submit():
+        content = form.body.data
+        session['content'] = content
+        flash("You've updated the discharge summary")
+        return redirect(url_for('get_summary'))   
+    return render_template('edit.html', is_edit=True, form=form, content=content)
+
+@app.route('/download', methods=['GET'])
+def download_pdf():
+    content = session.get('content', None)
+    if content:
+        # Convert HTML content to PDF
+        pdf = pdfkit.from_string(content, False, configuration=config)
+        
+        # Create a response with PDF as attachment
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = 'attachment; filename=discharge_summary.pdf'
+        
+        return response
+    else:
+        flash('No content available for download.')
+        return redirect(url_for('get_summary'))
+
+# Define patient friendly prompt and clinical prompt
+patient_friendly_prompt = ("Given a set of clinical notes from a patient's medical record, produce a clear and concise medical discharge summary. The summary should succinctly include the following core components:\n\n"
+                        "1. Reason for Admission: Summarize the primary cause or event leading to the patient's hospitalization.\n"
+                        "2. Key Investigations and Results: Summarize important diagnostic tests conducted during the hospital stay and their outcomes and why they were done.\n"
+                        "3. Procedures Performed: Briefly list any medical or surgical procedures the patient underwent during their stay, highlight why this was done.\n"
+                        "4. Primary and Secondary Diagnoses: Briefly state the main and any secondary diagnoses made during the hospitalization.\n"
+                        "5. Medication Changes: Note any changes to the patient's medication regimen during their stay and why these were done.\n"
+                        "6. Plan for Follow-Up: Include briefly appointments, tests, or treatments scheduled after discharge for ongoing care as mention in the clinical notes.\n"
+                        "The summary generated should be presented to a non-medical patient in second person, avoid formatting the summary as a letter. Therefore, medical jargon should be explained succinctly within a parenthesis next to the medical term. This should be easy to understand but not lack detail on what term or procedure is being explained."
+                        "Please generate the core components into 6 short concise paragraphs. The discharge summary should be legible and easy to read. Keep this summary specific to the patient and do not omit any important details from the original clinical note such as diagnosis, values from tests and procedures, reasons for medication changes, plans for follow up.")
+            
+clinical_prompt = ("Given a set of clinical notes from a patients medical record, produce a clear and concise medical discharge summary. The summary should succinctly include the following 10 core components:\n\n"
+            "1. Reason for Admission: Summarize the primary cause or event leading to the patient's hospitalization.\n"
+            "2. Relevant Past Medical and Surgical History: Include any significant past illnesses and surgeries that are pertinent to the current condition.\n"
+            "3. Social Context: Outline the patient's social situation, including smoking and alcohol history, family, living conditions, and support systems, if relevant.\n"
+            "4. Key Investigations and Results: Detail important diagnostic tests conducted during the hospital stay and their outcomes.\n"
+            "5. Procedures Performed: List any medical or surgical procedures the patient underwent during their stay.\n"
+            "6. Primary and Secondary Diagnoses: State the main and any secondary diagnoses made during the hospitalization.\n"
+            "7. Medication Changes: Note any changes to the patient's medication regimen during their stay. Highlight why the medication has been changed\n"
+            "8. Medications to be Reviewed by the GP: Identify medications that require follow-up or review by the general practitioner.\n"
+            "9. GP Actions Following Discharge: Specify actions or monitoring the GP should undertake post-discharge.\n"
+            "10. Plan for Follow-Up: Include appointments, tests, or treatments scheduled after discharge for ongoing care.\n"
+            "Organize the summary with 10 clear headings for each core component, ensure there are sub-bullet points with clear and concise information, maintaining the clarity and brevity of the discharge summary.\n"
+            "Please also ensure that the summary highlights What the plan is for the patient post discharge, including any follow-up appointments, changes to medication, tests, or treatments that are scheduled.")
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

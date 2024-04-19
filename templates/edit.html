@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Discharge Summary Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="edit-page">
+
+    <nav class="navbar navbar-expand-lg">
+      <img src="/static/images/summit.svg" alt="brand logo" class="img-fluid logo">
+        <div class="container">    
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{{url_for('home')}}">Home</a>
+              </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Pricing</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Log In</a>
+                </li>
+            </ul>
+            <button class="btn btn-primary">Sign Up</button>
+        </div>
+    </nav>
+
+    <main class="container main-content">
+        <div class="container">
+
+            <!-- flash messages  -->
+            <div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            {% if is_edit: %}
+                <h2 class="summary-title">Edit Discharge Summary</h2>
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        <div>
+                            {{ ckeditor.load(pkg_type="standard") }}
+                            {{ form.body(class='form-control') }}
+                            {{ ckeditor.config(name='body', value=content) }} 
+                            <button type="submit" class="btn btn-primary mt-5">Submit</button>
+                        </div>      
+                    </form>
+            {% else: %}
+                <h2 class="summary-title">AI Discharge Summary</h2>
+                <div class="summary-content">
+                    {{ content | safe }}
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col d-flex justify-content-start">
+                        <a class="btn btn-primary" href="{{ url_for('edit') }}">Edit</a>
+                    </div>
+                    <div class="col d-flex justify-content-end">
+                        <a class="btn btn-primary" href="{{ url_for('download_pdf') }}">Download</a>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col text-center">
+                        <a class="btn btn-primary">Generate patient friendly version</a>
+                    </div>
+                </div>
+            {% endif %}            
+        </div>
+
+    </main>
+
+    <footer class="text-white py-3">
+        <div class="container py-3">
+          <div class="row">
+            <div class="col-md-4">
+              <ul class="list-unstyled">
+                <li><i class="fas fa-phone fas-footer"></i>+44-xxxx-xxxx-xxx</li>
+                <li><i class="fas fa-envelope fas-footer"></i>summit@proton.com</li>
+                <li><i class="fas fa-map-marker-alt fas-footer"></i> Bridge Street, Cardiff, CF10 2TP</li>
+              </ul>
+            </div>
+    
+            <div class="col-md-4 text-center">
+              <ul class="list-unstyled">
+                <li><a href="">About Us</a></li>
+                <li><a href="">Contact Us</a></li>
+                <li><a href="">Pricing</a></li>
+              </ul>
+            </div>
+            
+            <div class="col-md-4 text-right">
+              <ul class="list-unstyled">  
+                <li><a href="">Privacy Policy</a></li>
+                <li><a href="">Terms & Conditions</a></li>
+              </ul>
+              <div class="mt-2">
+                <a href="" class="text-white mr-2"><i class="fab fa-facebook fas-social"></i></a>
+                <a href="" class="text-white mr-2"><i class="fab fa-twitter fas-social"></i></a>
+                <a href="" class="text-white"><i class="fab fa-instagram fas-social"></i></a>
+              </div>
+            </div>
+          </div>
+    
+          <div class="row mt-3">
+            <div class="col-md-12 text-center">
+              <p>&copy; 2024 Summit All Right are reserved</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/097dda7f33.js" crossorigin="anonymous"></script>
+
+    <script>
+        CKEDITOR.replace('body', {
+            autoGrow_maxHeight: 800, 
+            autoGrow_minHeight: 250 
+        });
+    </script>
+</body>
+</html>
+

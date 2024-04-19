@@ -17,10 +17,10 @@ ckeditor = CKEditor(app)
 
 UPLOAD_FOLDER = 'static/asset/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SECRET_KEY']= '33cb3a618421f095b17b657179e7a83a'
+app.config['SECRET_KEY']= os.environ.get("SECRET_KEY")
 config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
 
-# Set session lifetime to 30 minutes (for example)
+# Set session lifetime to 60 minutes
 app.permanent_session_lifetime = timedelta(minutes=60)
 
 client = OpenAI(

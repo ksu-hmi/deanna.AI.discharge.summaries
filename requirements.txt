@@ -105,4 +105,5 @@ Werkzeug==3.0.0
 WTForms==3.0.1
 pdfkit==1.0.0
 pdf2image==1.17.0
+xhtml2pdf==0.2.15
 

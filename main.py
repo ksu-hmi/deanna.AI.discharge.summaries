@@ -1,7 +1,6 @@
-import os 
+import os
 import base64
 import markdown
-import pdfkit
 from openai import OpenAI
 from pdf2image import convert_from_path
 from io import BytesIO
@@ -9,16 +8,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from form import EditForm
 from flask_ckeditor import CKEditor
 from datetime import datetime, timedelta
+from xhtml2pdf import pisa
 
 app = Flask(__name__)
 ckeditor = CKEditor(app)
 
-
-
 UPLOAD_FOLDER = 'static/asset/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY']= os.environ.get("SECRET_KEY")
-config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
 
 # Set session lifetime to 60 minutes
 app.permanent_session_lifetime = timedelta(minutes=60)
@@ -33,7 +30,7 @@ def generate_unique_filename():
 
 encoded_images = []
 
-# convert pdf file to a list of images 
+# convert pdf file to a list of images
 def pdf_to_encoded_imgs(pdf_path):
     global encoded_images
     images = convert_from_path(pdf_path)
@@ -41,8 +38,6 @@ def pdf_to_encoded_imgs(pdf_path):
     encoded_images = []  # Clear the list before appending new images
 
     for image in images:
-        images = convert_from_path(pdf_path)
-
         # convert image to bytes
         buffered = BytesIO()
         image.save(buffered, format='JPEG')
@@ -51,38 +46,32 @@ def pdf_to_encoded_imgs(pdf_path):
         img_str = base64.b64encode(buffered.getvalue()).decode()
 
         # append the encoded string to the list
-        encoded_images.append(img_str) 
+        encoded_images.append(img_str)
 
-        return encoded_images
+    return encoded_images
 
 def send_request(encoded_images, custom_prompt):
     # send request to ChatGPT
     response = client.chat.completions.create(
-    model="gpt-4-vision-preview",
-    messages=[
-        {
-        "role": "user",
-        "content": [
+        model="gpt-4-vision-preview",
+        messages=[
             {
-            "type": "text",
-            "text": custom_prompt,
-            },
-            {
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{encoded_images[0]}",
-            },
-            },
-            # {
-            # "type": "image_url",
-            # "image_url": {
-            #     "url": f"data:image/jpeg;base64,{encoded_images[1]}",
-            # },
-            # },
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": custom_prompt,
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{encoded_images[0]}",
+                        },
+                    },
+                ],
+            }
         ],
-        }
-    ],
-    max_tokens=4000,
+        max_tokens=4000,
     )
 
     return response.choices[0].message.content
@@ -103,7 +92,7 @@ def home():
             filename = generate_unique_filename()
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             encoded_images = pdf_to_encoded_imgs(f'static/asset/{filename}')
-            return redirect(url_for('get_clinic'))        
+            return redirect(url_for('get_clinic'))
     return render_template('index.html')
 
 @app.route("/clinic", methods=['GET', 'POST'])
@@ -114,7 +103,7 @@ def get_clinic():
     content = markdown.markdown(content)
     session['content'] = content
     session['is_clinic'] = True
-    return redirect(url_for('get_summary')) 
+    return redirect(url_for('get_summary'))
 
 @app.route('/patient-friendly', methods=['GET', 'POST'])
 def get_patient_friendly():
@@ -124,14 +113,13 @@ def get_patient_friendly():
     content = markdown.markdown(content)
     session['content'] = content
     session['is_clinic'] = False
-    return redirect(url_for('get_summary')) 
+    return redirect(url_for('get_summary'))
 
 @app.route("/summary", methods=['GET', 'POST'])
 def get_summary():
     content = session.get('content', None)
     is_clinic = session.get('is_clinic', None)
     return render_template('edit.html', content=content, is_edit=False, is_clinic=is_clinic)
-
 
 @app.route("/edit", methods=['GET', 'POST'])
 def edit():
@@ -143,29 +131,25 @@ def edit():
         content = form.body.data
         session['content'] = content
         flash("You've updated the discharge summary")
-        return redirect(url_for('get_summary'))   
+        return redirect(url_for('get_summary'))
     return render_template('edit.html', is_edit=True, form=form, content=content)
-
-
-
-
 
 @app.route('/download', methods=['GET'])
 def download_pdf():
     content = session.get('content', None)
     if content:
-        # Convert HTML content to PDF
-        pdf = pdfkit.from_string(content, False, configuration=config)
-        
-        # Create a response with PDF as attachment
-        response = make_response(pdf)
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = 'attachment; filename=discharge_summary.pdf'
-        
-        return response
+        # Convert HTML content to PDF using xhtml2pdf
+        pdf_data = generate_pdf(content)
+        if pdf_data:
+            response = make_response(pdf_data)
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = 'attachment; filename=discharge_summary.pdf'
+            return response
+        else:
+            flash('Failed to generate PDF.')
     else:
         flash('No content available for download.')
-        return redirect(url_for('get_summary'))
+    return redirect(url_for('get_summary'))
 
 # Define patient friendly prompt and clinical prompt
 patient_friendly_prompt = ("Given a set of clinical notes from a patient's medical record, produce a clear and concise medical discharge summary. The summary should succinctly include the following core components:\n\n"
@@ -177,7 +161,7 @@ patient_friendly_prompt = ("Given a set of clinical notes from a patient's medic
                         "6. Plan for Follow-Up: Include briefly appointments, tests, or treatments scheduled after discharge for ongoing care as mention in the clinical notes.\n"
                         "The summary generated should be presented to a non-medical patient in second person, avoid formatting the summary as a letter. Therefore, medical jargon should be explained succinctly within a parenthesis next to the medical term. This should be easy to understand but not lack detail on what term or procedure is being explained."
                         "Please generate the core components into 6 short concise paragraphs. The discharge summary should be legible and easy to read. Keep this summary specific to the patient and do not omit any important details from the original clinical note such as diagnosis, values from tests and procedures, reasons for medication changes, plans for follow up.")
-            
+
 clinical_prompt = ("Given a set of clinical notes from a patients medical record, produce a clear and concise medical discharge summary. The summary should succinctly include the following 10 core components:\n\n"
             "1. Reason for Admission: Summarize the primary cause or event leading to the patient's hospitalization.\n"
             "2. Relevant Past Medical and Surgical History: Include any significant past illnesses and surgeries that are pertinent to the current condition.\n"
@@ -191,6 +175,16 @@ clinical_prompt = ("Given a set of clinical notes from a patients medical record
             "10. Plan for Follow-Up: Include appointments, tests, or treatments scheduled after discharge for ongoing care.\n"
             "Organize the summary with 10 clear headings for each core component, ensure there are sub-bullet points with clear and concise information, maintaining the clarity and brevity of the discharge summary.\n"
             "Please also ensure that the summary highlights What the plan is for the patient post discharge, including any follow-up appointments, changes to medication, tests, or treatments that are scheduled.")
+
+def generate_pdf(html_content):
+    buffer = BytesIO()
+    pisa_status = pisa.CreatePDF(html_content, dest=buffer)
+    if pisa_status.err:
+        return None
+    else:
+        pdf_data = buffer.getvalue()
+        buffer.close()
+        return pdf_data
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

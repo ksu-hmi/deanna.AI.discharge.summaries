@@ -188,3 +188,22 @@ def generate_pdf(html_content):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
+def send_sms(self, message):
+        # Twilio configuration
+        TWILIO_ACCOUNT_SID = 'your_account_sid'
+        TWILIO_AUTH_TOKEN = 'your_auth_token'
+        TWILIO_PHONE_NUMBER = 'your_twilio_phone_number'
+        
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        
+        try:
+            sms = client.messages.create(
+                body=message,
+                from_=TWILIO_PHONE_NUMBER,
+                to=self.patient.phone_number
+            )
+            print(f"SMS sent successfully to {self.patient.phone_number}")
+        except Exception as e:
+            print(f"Failed to send SMS: {e}")
+

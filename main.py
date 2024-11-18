@@ -186,11 +186,10 @@ def generate_pdf(html_content):
         buffer.close()
         return pdf_data
 
-https://github.com/ksu-hmi/deanna.AI.discharge.summaries/blob/main/SMS
-
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
 
+    
 def send_sms(self, message):
         # Twilio configuration
         TWILIO_ACCOUNT_SID = 'your_account_sid'

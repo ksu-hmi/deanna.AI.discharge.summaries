@@ -20,9 +20,7 @@ app.config['SECRET_KEY']= os.environ.get("SECRET_KEY")
 # Set session lifetime to 60 minutes
 app.permanent_session_lifetime = timedelta(minutes=60)
 
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_DISCHARGE_API")
-)
+client = OpenAI(api_key="your_api_key_here")
 
 def generate_unique_filename():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -189,7 +187,7 @@ def generate_pdf(html_content):
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
 
- def send_sms(self, message):
+def send_sms(self, message):
         # Twilio configuration
         TWILIO_ACCOUNT_SID = 'your_account_sid'
         TWILIO_AUTH_TOKEN = 'your_auth_token'

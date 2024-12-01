@@ -10,8 +10,8 @@
 
 6 -[x] attempt to download repository to KSUHMI
 
-7- [] attempting to have original file running
+7- [x] attempting to have original file running
 
-8- [] adding code for sms text
+8- [x] adding code for sms text
 
-9 -[] attempting to add sms version of discharge summary
+9 -[x] attempting to add sms version of discharge summary
